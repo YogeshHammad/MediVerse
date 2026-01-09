@@ -1,43 +1,42 @@
 const User = require('../models/user');
 
-// REGISTER: Saves data to MongoDB
+// Register a new Patient
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    
+    // Check if user exists
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: 'User already exists' });
 
-    // Save to database
+    // Create new user
     user = new User({ name, email, password, role: 'patient' });
-    await user.save(); 
+    await user.save();
 
-    res.status(201).json({ message: 'Registration successful' });
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error: error.message });
+    res.status(500).json({ message: 'Server Error', error });
   }
 };
 
-// LOGIN: Matches credentials and returns the "user" object
+// Login User
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     
+    // Simple validation
     if (!user || user.password !== password) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // This structure fixes the "Oops" error
+    // Send user info back
     res.json({ 
-      token: "valid_session_" + user._id, 
-      user: { 
-        _id: user._id, 
-        name: user.name, 
-        role: user.role 
-      }
+      _id: user._id, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role 
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error: error.message });
+    res.status(500).json({ message: 'Server Error', error });
   }
 };
